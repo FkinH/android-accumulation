@@ -27,5 +27,29 @@ Accumulating android for myself.
 5. 简化item布局
 6. 使用新的recycleview
 
-## Life Circle 组件生命周期
+## Life Cycle 组件生命周期
 ### Activity
+```
+onCreate()->onStart()->onRestart()->onResume()->onPause()->onStop()->onDestroy()
+```
+[Activity生命周期详解一](http://stormzhang.com/android/2014/09/14/activity-lifecycle1/)
+
+[Activity生命周期详解二](http://stormzhang.com/android/2014/09/17/android-lifecycle2/)
+
+具体细节以后补充
+### Service
+在Service每一次的开启关闭过程中，只有onStart可被多次调用(通过多次startService调用)
+
+其他onCreate，onBind，onUnbind，onDestory在一个生命周期中只能被调用一次。
+#### Start Service
+```
+onCreate()->onStart()->onDestroy()
+```
+
+#### Bind Service
+```
+onCreate()->onBind()->onDestroy()
+```
+### Fragment
+
+### Broadcast
