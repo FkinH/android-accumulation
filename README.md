@@ -1,14 +1,20 @@
 # android-accumulation
 Accumulating android for myself.
 
-## Draw View 绘制
+## Framework
 
-### onMeasure()
-计算view大小
-### onLayout()
-确定view于content中的位置
-### onDraw()
-绘制view
+Application, Application Framework, Libraries + Android Runtime, Linux Kernel
+
+## Draw View 绘制
+`Activity.setContentView()` ，逻辑关系。每一个Activity，都包含一个Window对象，它表示的是一个顶级的一整屏幕上面的界面逻辑。
+在整个控件树的最顶端，是一个逻辑的树顶，`ViewParent`，在源码中的实现是`ViewRoot`。
+它是整个控件树和WindowManager之间的事件信息的翻译者。WindowManager将用户的操作，翻译成为指令，发送给呈现在界面上的各个Window。
+
+`onMeasure()` 计算view大小
+
+`onLayout()` 确定view于content中的位置
+
+`onDraw()` 绘制view
 
 ## View Performance 性能优化
 ### improving overdraw
