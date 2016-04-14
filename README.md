@@ -1,7 +1,7 @@
 # android-accumulation
 Accumulating android for myself.
 
-## Framework
+## Framework 框架
 
 Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 
@@ -17,7 +17,9 @@ Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 `onDraw()` 绘制view
 
 ## View Performance 性能优化
+
 ### improving overdraw
+
 1. 移除重复背景
 2. 使用 @android:color/transparent 代替重复背景色
 3. 使用 `<viewstub>` 动态加载不常用布局
@@ -26,12 +28,55 @@ Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 6. 使用hierarchy viewer/uiautomatorviewer检查布局
 
 ### improving listview
+
 1. 复用convertview减少adapter读取xml时的io操作
 2. 使用viewholder管理item
 3. 缓存数据
 4. 分页加载
 5. 简化item布局
 6. 使用新的recycleview
+
+## Event Delivery 事件传递
+
+> Note:
+> 1. 所有Touch事件都被封装成了`MotionEvent`对象。
+> 2. 事件类型分为`ACTION_DOWN`, `ACTION_UP`, `ACTION_MOVE`, `ACTION_POINTER_DOWN`, `ACTION_POINTER_UP`, `ACTION_CANCEL`，以`ACTION_DOWN`开始`ACTION_UP`结束。
+> 3. 对事件的处理包括三类，分别为传递—`dispatchTouchEvent()`, 拦截—`onInterceptTouchEvent()`, 消费—`onTouchEvent()`和`OnTouchListener`
+
+
+[Android Touch事件传递机制](http://www.trinea.cn/android/touch-event-delivery-mechanism/)
+
+### 流程
+
+`Activity.dispatchTouchEvent()`->`Activity.onUserInteraction()`->`Layout.dispatchTouchEvent()`->`Layout.onIntercepTouchEvent()`
+
+1. 事件从`Activity.dispatchTouchEvent()`开始传递，只要没有被停止或拦截，从最上层的`View(ViewGroup)`开始一直往下传递。子View可以通过onTouchEvent()对事件进行处理。
+
+2. 事件由父View(ViewGroup)传递给子View，ViewGroup可以通过`onInterceptTouchEvent()`对事件做拦截，停止其往下传递。
+
+3. 如果事件从上往下传递过程中一直没有被停止，且最底层子View没有消费事件，事件会反向往上传递，这时父View(ViewGroup)可以进行消费，如果还是没有被消费的话，最后会到Activity的`onTouchEvent()`函数。
+
+4. 如果View没有对`ACTION_DOWN`进行消费，之后的其他事件不会传递过来。
+
+5. `OnTouchListener`优先于`onTouchEvent()`对事件进行消费。
+
+```
+public boolean dispatchTouchEvent(MotionEvent ev) {    
+    boolean consume = false;    
+    if (onInterceptTouchEvent(ev)) {
+        consume = onTouchEvent(ev);
+    } else {
+        consume = child.dispatchTouchEvent(ev);    
+    }
+    return consume;
+}
+```
+
+## Multithreading 多线程
+
+### AsyncTask
+
+### Handler
 
 ## Life Cycle 组件生命周期
 ### Activity
