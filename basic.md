@@ -1,6 +1,8 @@
-##HashMap
-###Hash冲突
-```
+## HashMap
+
+### Hash冲突
+
+``` 
 public V put(K key, V value) {  
     if (key == null)  
         return putForNullKey(value);  
@@ -23,8 +25,10 @@ public V put(K key, V value) {
     addEntry(hash, key, value, i);  
     return null;  
 }  
-```
-###Map增长
+``` 
+
+### Map增长
+
 ```
 void addEntry(int hash, K key, V value, int bucketIndex) {  
     Entry<K,V> e = table[bucketIndex];  
@@ -33,7 +37,7 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
         resize(2 * table.length);  
 ```
 
-###负载因子
+### 负载因子
 创建 HashMap 时，有一个默认的负载因子（load factor），其默认值为 0.75，
 增大负载因子可以减少 Hash 表（就是那个 Entry 数组）所占用的内存空间，但会增加查询数据（get/put）的时间开销;
 减小负载因子会提高数据查询的性能，但会增加 Hash 表所占用的内存空间;
