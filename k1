@@ -1,0 +1,156 @@
+算法：https://wizardforcel.gitbooks.io/the-art-of-programming-by-july/content/00.01.html
+
+binder http://blog.csdn.net/carson_ho/article/details/73560642
+
+https://hit-alibaba.github.io/interview/Android/Questions.html
+
+acdd
+DelegateClassLoader
+DelegateResource
+ComtextImplHook
+InstrumentationHook
+
+view 绘制http://blog.csdn.net/wangjinyu501/article/details/9008271
+view 分发http://blog.csdn.net/carson_ho/article/details/54136311
+
+ams AMS统一调度所有应用程序的Activity
+
+1.首先IPC调用AMS方法传入参数启动指定Activity
+2.在AMS中首先查询PKMS获取该ActivityInfo，新建ActivityRecord和根据lunchMod创建TaskRecord两个重要变量，并且将ActivityRecord添加到task栈顶作为准备启动的Activity。
+3.在正式启动Activity之前首先检查其进程是否启动，为启动时通知AMS启动对应进程。
+
+1.首先就是zygote进程fork新进程，指定新进程执行需要启动的ActivityThread类。
+2.在ActivityThread的main()方法中：
+首先新建ActivityThread对象。
+接着回调AMS接口通知其应用进程已启动成功。
+最后开启主线程消息循环，处理消息。
+
+3.其中上步骤第二点在与AMS交互中IPC调用AMS的attachApplication()函数中：
+首先根据pid查找对应的ProcessRecord
+设置该应用退出时的回调接口
+修改ProcessRecord一些参数
+最后与应用进程交互，开始创建Application对象
+
+4.AMS与应用进程交互时会发出一个异步消息，该消息内部：
+配置运行时信息
+安装该Application对应的ContentProvider
+生成一个Application对象并且回调onCreate()函数
+5.AMS与应用进程交互完接着准备启动目标Activity，在ActivityStackSupervisor.attachApplicationLocked()函数中会首先获取需要启动的ActivityRecord并保存到对应的ProcessRecord，接着IPC调用应用进程启动Activity。
+
+6.在应用进程中也是异步消息处理
+首先反射实例化目标Activity对象，回调相应onStart()之前的生命周期函数
+接着回调onResume()函数并且添加一个Idler消息对象到队列中。该对象内部方法会调用到AMS中的相应方法处理因此次启动而被暂停的Activity的相关声明周期函数处理。
+
+7.同时在AMS中会将task添加到最近任务列表中，并且发送10s定时等待这个Activity处理结果。
+8.此时目标Activity已经被成功启动，接着会处理一些Pending组件，这些组件可能是在系统启动未成功时发起的一些启动指令。
+
+最终一个Activity启动成功。
+
+standard：默认启动模式，不管有没有已存在的实例都生成新的实例。
+singleTop：如果栈顶存在对应的实例则重复利用不生产新的实例，不存在则新建实例。
+singleTask：如果栈内存在对于的实例则使此Activity实例之上的其他Activity实例都出栈，使此Activity实例成为栈顶对象显示。
+singleInstance：启用一个新栈放入新建Activity实例，并且该栈内只允许存在这一个Activity实例。
+
+FLAG_ACTIVITY_NEW_TASK：将目标Activity放置到新的task中。
+FLAG_ACTIVITY_CLEAR_TASK：启动一个Activity时先清除和其有关联的task，并新建Activity实例将其放入新的task中。必须和上面变量一起使用
+FLAG_ACTIVITY_CLEAR_TOP：启动一个不处于栈顶的Activity时，清除排在它前面的Activity使其显示出来。
+
+wms
+1. 窗口的添加和删除
+2. 窗口的显示和隐藏控制
+3. Z-order顺序管理
+4. 焦点窗口和焦点应用的管理
+5. 输入法窗口管理和墙纸窗口管理
+6. 窗口动画管理
+7. 系统消息收集和分发
+
+1.每个应用类窗口都对应一个Activity对象，所以创建应用类窗口需要创建Activity对象。当AmS要启动某个Activity时就会通知客户端进程，每个客户端进程都对应一个ActivityThread类，所以需要ActivityThread启动Activity。
+启动某个Activity实际是构造一个Activity对象，使用ClassLoader从程序文件中装载指定的Activity对应的Class文件。
+2.创建完成Activity对象后调用Activity的attach（）方法，attach（）的作用就是为刚刚创造好的Activity设置内部变量。
+3.为该Activity创建Window对象。
+4.给Window对象中的mWindowManager变量赋值。
+5.然后就需要给该窗口添加真正的View或者ViewGroup。从performLaunchActivity（）调用callActivityOnCreate（）开始，然后经一系列调用到Activity的onCreate（）方法，在onCreate（）方法中调用setContentView（）方法实际是调用了其对应的Window对象的setContentView（）方法。
+6.接着会调用到PhoneWindow的setContentView，首先调用installDecor（）为Window类添加窗口装饰，其实就是标题栏，程序中设置的layout.xml界面被包含在窗口装饰中，叫做窗口内容。窗口装饰也是ViewGroup，窗口装饰和它内部的内容加起来就是我们所说的窗口，或者叫做Window界面。
+7.把创建的窗口通知WmS，让WmS把窗口显示在屏幕上。当Activity准备好后会通知Ams，然后Ams经过一系列调用到Activity的makeVisible（），该方法将真正完成把窗口添加进Wms中。
+8.在makeVisible方法中，首先获得该Activity内部的WindowManager对象，然后调用该对象的addView（）方法。
+9.调用WindowManagerImpl的addView（）方法，流程如下：
+检查添加的窗口是否已经添加过，不能重复添加。
+如果添加的窗口是子窗口类型，找到父窗口并保存在临时变量panelParentView中，该变量作为后面调用ViewRoot的setView（）参数。
+创建一个新的ViewRoot
+调用ViewRoot的setView（）。
+10.完成新建一个ViewRoot对象后，需要把新建的ViewRoot对象添加到mRoots对象中。
+11.调用ViewRoot对象的setView方法。流程如下：
+给ViewRoot的重要变量赋值。
+调用requestLayout（），发出界面重绘请求。
+调用sWindowSession.add（），通知Wms添加窗口。
+
+pms 总结起来就是扫描settings, Android系统中的apk,并且建立相应的数据结构去管理Package的信息，四大组件的信息，权限信息等内容。
+
+加载大图 bitmapregiondecoder lrucache
+LruCache的核心思想很好理解，就是要维护一个缓存对象列表，其中对象列表的排列方式是按照访问顺序实现的，即一直没访问的对象，将放在队尾，即将被淘汰。而最近访问的对象将放在队头，最后被淘汰。
+LinkedHashMap是由数组+双向链表的数据结构来实现的。其中双向链表的结构可以实现访问顺序和插入顺序，使得LinkedHashMap中的<key,value>对按照一定顺序排列起来。
+LruCache中维护了一个集合LinkedHashMap，该LinkedHashMap是以访问顺序排序的。当调用put()方法时，就会在结合中添加元素，并调用trimToSize()判断缓存是否已满，如果满了就用LinkedHashMap的迭代器删除队尾元素，即近期最少访问的元素。当调用get()方法访问缓存对象时，就会调用LinkedHashMap的get()方法获得对应集合元素，同时会更新该元素到队头。
+
+
+RecyclerView 和 ListView 性能和效果区别
+ RecyclerView 就能支持 线性布局、网格布局、瀑布流布局 三种，而且同时还能够控制横向还是纵向滚动
+ 没有setemptyview，headerview，footerview
+ 局部刷新粒度notifyItemChanged
+
+Listview
+RecycleBin 移出屏幕时回收，进入屏幕后复用getScrapView()
+convertView
+
+有可能引发图片错乱
+
+JVM运行内存的分类
+程序计数器：当前线程所执行的字节码的行号指示器，用于记录下一条要运行的指令，线程私有
+注：如果正在执行的是Native方法，计数器值则为空
+Java虚拟栈：存放基本数据类型、对象的引用、方法出口等，线程私有
+Native方法栈：和虚拟栈相似，只不过它服务于Native方法，线程私有
+Java堆：java内存最大的一块，所有对象实例、数组都存放在java堆，GC回收的地方，线程共享
+方法区：存放已被加载的类信息、常量、静态变量、即时编译器编译后的代码数据等。（即永久带），回收目标主要是常量池的回收和类型的卸载，各线程共享
+
+Java内存堆和栈区别
+栈内存用来存储基本类型的变量和对象的引用变量，堆内存用来存储Java中的对象，无论是成员变量，局部变量，还是类变量，它们指向的对象都存储在堆内存中
+栈内存归属于单个线程，每个线程都会有一个栈内存，其存储的变量只能在其所属线程中可见，即栈内存可以理解成线程的私有内存，堆内存中的对象对所有线程可见。堆内存中的对象可以被所有线程访问
+如果栈内存没有可用的空间存储方法调用和局部变量，JVM会抛出java.lang.StackOverFlowError，如果是堆内存没有可用的空间存储生成的对象，JVM会抛出java.lang.OutOfMemoryError
+栈的内存要远远小于堆内存，如果你使用递归的话，那么你的栈很快就会充满，-Xss选项设置栈内存的大小。-Xms选项可以设置堆的开始时的大小
+
+Java四引用
+强引用（StrongReference）强引用是使用最普遍的引用。如果一个对象具有强引用，那垃圾回收器绝不会回收它。当内存空间不足，Java虚拟机宁愿抛出OutOfMemoryError错误，使程序异常终止，也不会靠随意回收具有强引用的对象来解决内存不足的问题
+软引用（SoftReference）
+如果内存空间不足了，就会回收这些对象的内存。只要垃圾回收器没有回收它，软引用可以和一个引用队列（ReferenceQueue）联合使用，如果软引用所引用的对象被垃圾回收器回收，Java虚拟机就会把这个软引用加入到与之关联的引用队列中
+弱引用（WeakReference）
+弱引用与软引用的区别在于：只具有弱引用的对象拥有更短暂的生命周期。在垃圾回收器线程扫描它所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，不管当前内存空间足够与否，都会回收它的内存。
+弱引用可以和一个引用队列（ReferenceQueue）联合使用，如果弱引用所引用的对象被垃圾回收，Java虚拟机就会把这个弱引用加入到与之关联的引用队列中
+虚引用（PhantomReference）
+虚引用在任何时候都可能被垃圾回收器回收，主要用来跟踪对象被垃圾回收器回收的活动，被回收时会收到一个系统通知。虚引用与软引用和弱引用的一个区别在于：虚引用必须和引用队列 （ReferenceQueue）联合使用。当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在回收对象的内存之前，把这个虚引用加入到与之关联的引用队列中。
+
+GC回收机制
+Java中对象是采用new或者反射的方法创建的，这些对象的创建都是在堆（Heap）中分配的，所有对象的回收都是由Java虚拟机通过垃圾回收机制完成的。GC为了能够正确释放对象，会监控每个对象的运行状况，对他们的申请、引用、被引用、赋值等状况进行监控
+Java程序员不用担心内存管理，因为垃圾收集器会自动进行管理
+可以调用下面的方法之一：System.gc() 或Runtime.getRuntime().gc() ，但JVM可以屏蔽掉显示的垃圾回收调用
+GC 标记对象的死活
+引用计数法：给对象添加一个引用计数器,没当被引用的时候,计数器的值就加一。引用失效的时候减一,当计数器的值为 0 的时候就表示改对象可以被 GC 回收了，弊端:A->B,B->A,那么 AB 将永远不会被回收了。也就是引用有环的情况
+根搜索算法(可达性算法) GC Roots Tracing：通过一个叫 GC Roots 的对象作为起点,从这些结点开始向下搜索,搜索所走过的路径称为引用链,当一个对象没有与任何的引用链相连的时候则改对象就可以被。 GC 回收回收了Roots 包括：java 虚拟机栈中引用的对象,本地方法栈中引用的对象,方法区中常量引用的对象,方法区中静态属性引用的对象
+在Java语言里，可作为GC Roots的对象包括以下几种：
+ 虚拟机栈（栈帧中的本地变量表）中的引用的对象
+ 方法区中的类静态属性引用的对象
+ 方法区中的常量引用的对象。
+ 本地方法栈中JNI(即一般说的Native方法)的引用的对象。
+
+GC回收算法
+标记-清除法：标记出没有用的对象，然后一个一个回收掉
+缺点：标记和清除两个过程效率不高，产生内存碎片导致需要分配较大对象时无法找到足够的连续内存而需要触发一次GC操作
+复制算法: 按照容量划分二个大小相等的内存区域，当一块用完的时候将活着的对象复制到另一块上，然后再把已使用的内存空间一次清理掉
+缺点：将内存缩小为了原来的一半
+标记-整理法：标记出没有用的对象，让所有存活的对象都向一端移动，然后直接清除掉端边界以外的内
+优点：解决了标记- 清除算法导致的内存碎片问题和在存活率较高时复制算法效率低的问题。
+分代回收：根据对象存活周期的不同将内存划分为几块，一般是新生代和老年代，新生代基本采用复制算法，老年代采用标记整理算法
+
+HashMap几乎可以等价于Hashtable，除了HashMap是非synchronized的，并可以接受null(HashMap可以接受为null的键值(key)和值(value)，而Hashtable则不行)。
+HashMap是非synchronized，而Hashtable是synchronized，这意味着Hashtable是线程安全的，多个线程可以共享一个Hashtable；而如果没有正确的同步的话，多个线程是不能共享HashMap的。Java 5提供了ConcurrentHashMap，它是HashTable的替代，比HashTable的扩展性更好。
+另一个区别是HashMap的迭代器(Iterator)是fail-fast迭代器，而Hashtable的enumerator迭代器不是fail-fast的。所以当有其它线程改变了HashMap的结构（增加或者移除元素），将会抛出ConcurrentModificationException，但迭代器本身的remove()方法移除元素则不会抛出ConcurrentModificationException异常。但这并不是一个一定发生的行为，要看JVM。这条同样也是Enumeration和Iterator的区别。
+由于Hashtable是线程安全的也是synchronized，所以在单线程环境下它比HashMap要慢。如果你不需要同步，只需要单一线程，那么使用HashMap性能要好过Hashtable。
+HashMap不能保证随着时间的推移Map中的元素次序是不变的
