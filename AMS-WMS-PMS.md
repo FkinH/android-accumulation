@@ -31,15 +31,6 @@ ams AMS统一调度所有应用程序的Activity
 
 最终一个Activity启动成功。
 
-standard：默认启动模式，不管有没有已存在的实例都生成新的实例。
-singleTop：如果栈顶存在对应的实例则重复利用不生产新的实例，不存在则新建实例。
-singleTask：如果栈内存在对于的实例则使此Activity实例之上的其他Activity实例都出栈，使此Activity实例成为栈顶对象显示。
-singleInstance：启用一个新栈放入新建Activity实例，并且该栈内只允许存在这一个Activity实例。
-
-FLAG_ACTIVITY_NEW_TASK：将目标Activity放置到新的task中。
-FLAG_ACTIVITY_CLEAR_TASK：启动一个Activity时先清除和其有关联的task，并新建Activity实例将其放入新的task中。必须和上面变量一起使用
-FLAG_ACTIVITY_CLEAR_TOP：启动一个不处于栈顶的Activity时，清除排在它前面的Activity使其显示出来。
-
 wms
 1. 窗口的添加和删除
 2. 窗口的显示和隐藏控制

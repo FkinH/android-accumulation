@@ -5,7 +5,7 @@ Accumulating android for myself.
 
 Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 
-## Draw View 绘制
+## View 绘制
 `Activity.setContentView()` ，逻辑关系。每一个Activity，都包含一个Window对象，它表示的是一个顶级的一整屏幕上面的界面逻辑。
 在整个控件树的最顶端，是一个逻辑的树顶，`ViewParent`，在源码中的实现是`ViewRoot`。
 它是整个控件树和WindowManager之间的事件信息的翻译者。WindowManager将用户的操作，翻译成为指令，发送给呈现在界面上的各个Window。
@@ -16,37 +16,17 @@ Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 
 `onDraw()` 绘制view
 
-## View Performance 性能优化
+view 绘制http://blog.csdn.net/wangjinyu501/article/details/9008271
 
-### improving overdraw
 
-1. 移除重复背景
-2. 使用 @android:color/transparent 代替重复背景色
-3. 使用 `<viewstub>` 动态加载不常用布局
-4. 使用 viewpager+fragment 取代 setvisibility
-5. 使用 `<merge>`、`<include>` 标签，合并/复用布局
-6. 使用hierarchy viewer/uiautomatorviewer检查布局
 
-### improving listview
-
-1. 复用convertview减少adapter读取xml时的io操作
-2. 使用viewholder管理item
-3. 缓存数据
-4. 分页加载
-5. 简化item布局
-6. 使用新的recycleview
-
-## Event Delivery 事件传递
+## 事件传递
 
 > Note:
 > 1. 所有Touch事件都被封装成了`MotionEvent`对象。
 > 2. 事件类型分为`ACTION_DOWN`, `ACTION_UP`, `ACTION_MOVE`, `ACTION_POINTER_DOWN`, `ACTION_POINTER_UP`, `ACTION_CANCEL`，以`ACTION_DOWN`开始`ACTION_UP`结束。
 > 3. 对事件的处理包括三类，分别为传递—`dispatchTouchEvent()`, 拦截—`onInterceptTouchEvent()`, 消费—`onTouchEvent()`和`OnTouchListener`
 
-
-[Android Touch事件传递机制](http://www.trinea.cn/android/touch-event-delivery-mechanism/)
-
-### 流程
 
 `Activity.dispatchTouchEvent()`->`Activity.onUserInteraction()`->`Layout.dispatchTouchEvent()`->`Layout.onIntercepTouchEvent()`
 
@@ -59,6 +39,24 @@ Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 4. 如果View没有对`ACTION_DOWN`进行消费，之后的其他事件不会传递过来。
 
 5. `OnTouchListener`优先于`onTouchEvent()`对事件进行消费。
+
+`dispatchTouchEvent()`
+true: 由自身此方法消费，停止向下传递
+false: 由上级消费
+super: onInterceptTouchEvent
+
+`onInterceptTouchEvent()`
+true/super: 拦截并消费
+false: 由下级分发
+
+`onTouchEvent()`
+true: 消费
+false/super: 由上级消费
+
+`OnTouchListener`
+
+http://blog.csdn.net/carson_ho/article/details/54136311
+https://www.jianshu.com/p/e99b5e8bd67b
 
 ```
 public boolean dispatchTouchEvent(MotionEvent ev) {    
@@ -76,7 +74,21 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 ### AsyncTask
 
+`SerialExecutor` ：将params 变成 future task
+`THREAD_POOL_EXECUTOR`: 线程池
+
 ### Handler
+
+一个线程只能有一个Looper，对应一个MessageQueue
+
+Looper.prepare()
+Looper.Loop()
+MesegeQueue
+msg.target
+
+Q:Android中为什么主线程不会因为Looper.loop()里的死循环卡死？
+
+A:ActivityThread实际上并非线程, Activity的生命周期都是依靠主线程的Looper.loop，当收到不同Message时, H.handleMessage(msg)
 
 ## Life Cycle 组件生命周期
 ### Activity
@@ -87,7 +99,16 @@ onCreate()->onStart()->onRestart()->onResume()->onPause()->onStop()->onDestroy()
 
 [Activity生命周期详解二](http://stormzhang.com/android/2014/09/17/android-lifecycle2/)
 
-具体细节以后补充
+standard：默认启动模式，不管有没有已存在的实例都生成新的实例。
+singleTop：如果栈顶存在对应的实例则重复利用不生产新的实例，不存在则新建实例。
+singleTask：如果栈内存在对于的实例则使此Activity实例之上的其他Activity实例都出栈，使此Activity实例成为栈顶对象显示。
+singleInstance：启用一个新栈放入新建Activity实例，并且该栈内只允许存在这一个Activity实例。
+
+FLAG_ACTIVITY_NEW_TASK：将目标Activity放置到新的task中。
+FLAG_ACTIVITY_CLEAR_TASK：启动一个Activity时先清除和其有关联的task，并新建Activity实例将其放入新的task中。必须和上面变量一起使用
+FLAG_ACTIVITY_CLEAR_TOP：启动一个不处于栈顶的Activity时，清除排在它前面的Activity使其显示出来。
+
+
 ### Service
 在Service每一次的开启关闭过程中，只有onStart可被多次调用(通过多次startService调用)
 
@@ -101,6 +122,4 @@ onCreate()->onStart()->onDestroy()
 ```
 onCreate()->onBind()->onDestroy()
 ```
-### Fragment
 
-### Broadcast

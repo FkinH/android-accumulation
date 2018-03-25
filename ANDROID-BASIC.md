@@ -1,3 +1,13 @@
+### Binder
+Binder 跨进程通信机制 模型 基于 `Client - Server` 模式 
+
+一种实现`IPC`的方式，实现了`IBinder`接口
+
+Binder数据拷贝只需要一次，而管道、socket、消息队列需要2次
+Binder为进程分配了UID/PID作为身份鉴别
+Binder面向对象
+
+
 加载大图 bitmapregiondecoder lrucache
 LruCache的核心思想很好理解，就是要维护一个缓存对象列表，其中对象列表的排列方式是按照访问顺序实现的，即一直没访问的对象，将放在队尾，即将被淘汰。而最近访问的对象将放在队头，最后被淘汰。
 LinkedHashMap是由数组+双向链表的数据结构来实现的。其中双向链表的结构可以实现访问顺序和插入顺序，使得LinkedHashMap中的<key,value>对按照一定顺序排列起来。
@@ -19,5 +29,4 @@ binder http://blog.csdn.net/carson_ho/article/details/73560642
 
 https://hit-alibaba.github.io/interview/Android/Questions.html
 
-view 绘制http://blog.csdn.net/wangjinyu501/article/details/9008271
-view 分发http://blog.csdn.net/carson_ho/article/details/54136311
+
