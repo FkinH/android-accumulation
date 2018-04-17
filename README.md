@@ -16,8 +16,7 @@ Application, Application Framework, Libraries + Android Runtime, Linux Kernel
 
 `onDraw()` 绘制view
 
-view 绘制http://blog.csdn.net/wangjinyu501/article/details/9008271
-
+view 绘制 https://github.com/FkinH/interview/blob/master/android/draw.md
 
 
 ## 事件传递

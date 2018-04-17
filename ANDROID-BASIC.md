@@ -30,3 +30,17 @@ binder http://blog.csdn.net/carson_ho/article/details/73560642
 https://hit-alibaba.github.io/interview/Android/Questions.html
 
 
+### apk、dex、odex
+
+https://www.jianshu.com/p/389911e2cdfb
+
+ART : .dex->.odex(机器码)（AOT　　Ahead-Of-Time）
+Dalvik: .dex->.odex(字节码)（JIT　Just-In-Time）
+机器码可直接执行，而字节码每次启动都需要执行将优化过的odex字节码再转换成机器码
+
+ART优缺####
+系统性能大幅提升
+App启动、运行更快
+减少每次启动的编译增加电池续航
+存储占用更大
+安装时间更长
