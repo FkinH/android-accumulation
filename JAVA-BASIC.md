@@ -1,3 +1,7 @@
+## 线程状态及切换
+
+https://www.jianshu.com/p/dbbcceb6bc2a
+
 ## HashMap
 
 ### Hash冲突
