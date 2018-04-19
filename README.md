@@ -78,6 +78,9 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 ### Handler
 
+
+http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2012/1025/475.html
+
 一个线程只能有一个Looper，对应一个MessageQueue
 
 Looper.prepare()
